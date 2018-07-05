@@ -131,7 +131,7 @@ func main() {
 			return
 		}
 		triggerUrl := fmt.Sprintf(
-			"%s/api/v4/projects/%d/trigger/pipeline?ref=%s&token=%&variables[MR_STATE]=%s",
+			"%s/api/v4/projects/%d/trigger/pipeline?ref=%s&token=%s&variables[MR_STATE]=%s",
 			*baseURL,
 			requestBody.ObjectAttributes.SourceProjectId,
 			requestBody.ObjectAttributes.SourceBranch,
