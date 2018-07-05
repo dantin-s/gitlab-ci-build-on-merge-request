@@ -86,8 +86,7 @@ func main() {
 		requestBodyAsByteArray, _ := json.Marshal(requestBody)
 		log.Printf("INFO: Received %s", string(requestBodyAsByteArray))
 		// do not trigger build if merge request is WIP or merged/closed
-		if requestBody.ObjectKind != "merge_request" || requestBody.ObjectAttributes.State != "opened" ||
-			requestBody.ObjectAttributes.WorkInProgress {
+		if requestBody.ObjectKind != "merge_request" ||	requestBody.ObjectAttributes.WorkInProgress {
 			return
 		}
 		// do not trigger if build for commit was already triggered
@@ -132,11 +131,12 @@ func main() {
 			return
 		}
 		triggerUrl := fmt.Sprintf(
-			"%s/api/v4/projects/%d/trigger/pipeline?ref=%s&token=%s",
+			"%s/api/v4/projects/%d/trigger/pipeline?ref=%s&token=%&variables[MR_STATE]=%s",
 			*baseURL,
 			requestBody.ObjectAttributes.SourceProjectId,
 			requestBody.ObjectAttributes.SourceBranch,
-			trigger.Token)
+			trigger.Token,
+            requestBody.ObjectAttributes.State)
 		triggerRes, err := http.PostForm(triggerUrl, url.Values{})
 		if err != nil {
 			log.Printf("WARN: %s", err.Error())
