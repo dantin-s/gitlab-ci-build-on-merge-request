@@ -18,6 +18,7 @@ type requestBody struct {
 	ObjectAttributes struct {
 		SourceBranch    string `json:"source_branch"`
 		SourceProjectId int    `json:"source_project_id"`
+		Iid             int    `json:"iid"`
 		State           string `json:"state"` // merged, opened or closed
 		LastCommit      struct {
 			Id string `json:"id"`
@@ -115,15 +116,15 @@ func main() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		if len(builds) > 0 {
-			for _, build := range builds {
-				if build.Status != "skipped" {
-					log.Printf("INFO: %s build skipped (reason: build %d is in \"%s\" status)",
-						requestBody.ObjectAttributes.LastCommit.Id, build.Id, build.Status)
-					return
-				}
-			}
-		}
+		//if len(builds) > 0 {
+		//	for _, build := range builds {
+		//		if build.Status != "skipped" && requestBody.ObjectAttributes.State == "opened" {
+		//			log.Printf("INFO: %s build skipped (reason: build %d is in \"%s\" status)",
+		//				requestBody.ObjectAttributes.LastCommit.Id, build.Id, build.Status)
+		//			return
+		//		}
+		//	}
+		//}
 		trigger, err := resolveTrigger(*baseURL, *privateToken, requestBody.ObjectAttributes.SourceProjectId)
 		if err != nil {
 			log.Printf("WARN: %s", err.Error())
@@ -131,12 +132,13 @@ func main() {
 			return
 		}
 		triggerUrl := fmt.Sprintf(
-			"%s/api/v4/projects/%d/trigger/pipeline?ref=%s&token=%&variables[MR_STATE]=%s",
+			"%s/api/v4/projects/%d/trigger/pipeline?ref=%s&token=%s&variables[MR_STATE]=%s&variables[MR_IID]=%v",
 			*baseURL,
 			requestBody.ObjectAttributes.SourceProjectId,
 			requestBody.ObjectAttributes.SourceBranch,
 			trigger.Token,
-            requestBody.ObjectAttributes.State)
+                        requestBody.ObjectAttributes.State,
+			requestBody.ObjectAttributes.Iid)
 		triggerRes, err := http.PostForm(triggerUrl, url.Values{})
 		if err != nil {
 			log.Printf("WARN: %s", err.Error())
