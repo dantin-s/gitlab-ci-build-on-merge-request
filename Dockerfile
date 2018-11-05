@@ -1,6 +1,11 @@
-FROM golang:1.6.2-onbuild
-MAINTAINER Stanley Shyiko <stanley.shyiko@gmail.com>
+FROM golang:1.11.1-alpine3.8
+MAINTAINER vincent wuwenxiong@shoplazza.com
+COPY / /opt
+WORKDIR /opt
+RUN go build
 
-RUN ln -s /go/bin/app /go/bin/gitlab-ci-build-on-merge-request
+FROM alpine:3.8
+COPY --from=0 /opt/gitlab-ci-build-on-merge-request .
+CMD ["/gitlab-ci-build-on-merge-request"]
 
 EXPOSE 8080
